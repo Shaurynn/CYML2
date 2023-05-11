@@ -1,16 +1,54 @@
 import streamlit as st
-from PIL import Image
-import requests
-from dotenv import load_dotenv
 import os
+from processor import preprocess, predict
+from tensorflow.keras.models import load_model
+from dotenv import load_dotenv
+import requests
 
-# Set page tab display
+
 st.set_page_config(
-   page_title="Simple Image Uploader",
-   page_icon= '🖼️',
+   page_title="Alzheimer's Disease Detection",
    layout="wide",
    initial_sidebar_state="expanded",
 )
+
+st.image("data/cn_example.png")
+
+with st.sidebar:
+
+    ATLAS = {
+        "MNI305": "atlas/tpl-MNI305_T1w.nii.gz",
+        "Empty_slot": "atlas/tpl-MNI305_T1w.nii.gz"}
+
+    MODELS = {
+        "Inception": "models/inception_model1.h5",
+        "Empty_slot": "models/inception_model1.h5"}
+
+    st.header("Upload subject MRI image:")
+    image = st.file_uploader("Choose an image", type=".nii", key="image")
+
+    st.header("Select atlas and model:")
+    atlas_key = st.selectbox("Choose a referencece image", [i for i in ATLAS.keys()])
+    atlas_value = ATLAS.get(atlas_key)
+    model_key = st.selectbox("Choose a deep-learning model", [i for i in MODELS.keys()])
+    model_value = MODELS.get(model_key)
+
+    #st.cache(allow_output_mutation=True)
+    def detect_AD():
+        preprocess(os.path.join("./input",image.name), atlas_value)
+        predict(f"./output/{image.name}_2d.npy", chosen_model)
+
+    with st.spinner('Loading model'):
+        if st.button("Load model"):
+            if image is not None and atlas_value is not None and model_value is not None:
+                with open(os.path.join("./input",image.name),"wb") as f:
+                    f.write(image.getbuffer())
+                chosen_model = load_model(model_value)
+                #st.success("Model loaded")
+                trigger = st.button('Begin analysis', on_click=detect_AD)
+            else:
+                st.error("Error: One or more input is/are missing.", icon="🚨")
+
 
 # Example local Docker container URL
 # url = 'http://api:8000'
@@ -24,9 +62,7 @@ url = os.getenv('API_URL')
 st.header('Simple Image Uploader 📸')
 st.markdown('''
             > This is a Le Wagon boilerplate for any data science projects that involve exchanging images between a Python API and a simple web frontend.
-
             > **What's here:**
-
             > * [Streamlit](https://docs.streamlit.io/) on the frontend
             > * [FastAPI](https://fastapi.tiangolo.com/) on the backend
             > * [PIL/pillow](https://pillow.readthedocs.io/en/stable/) and [opencv-python](https://github.com/opencv/opencv-python) for working with images
@@ -61,4 +97,3 @@ if img_file_buffer is not None:
       else:
         st.markdown("**Oops**, something went wrong 😓 Please try again.")
         print(res.status_code, res.content)
-

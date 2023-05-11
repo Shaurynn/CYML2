@@ -1,4 +1,4 @@
-FROM python:3.8.12-buster
+FROM python:3.10-slim
 
 WORKDIR /app
 
@@ -10,7 +10,14 @@ RUN apt-get install \
   'libxext6'  -y
 
 COPY requirements.txt .
+RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
+
+RUN python fslinstaller.py -d /usr/fsl
+ENV FSLDIR=/usr/fsl/
+ENV PATH=$PATH:$FSLDIR
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$FSLDIR
+ENV FSLOUTPUTTYPE=NIFTI_GZ
 
 COPY . .
 

@@ -5,12 +5,36 @@ twine
 wheel>=0.29
 
 # data science
-six
-
-# img
-pillow
-
-# web
+numpy
+pandas
+scikit-learn
+tensorflow
+matplotlib
+SimpleITK
+SimpleITK-SimpleElastix
+dltk
+scikit-image
+nipype
+antspyx
 streamlit
-requests
-python-dotenv
+streamlit-extras
+
+# tests/linter
+black
+coverage
+flake8
+pytest
+yapf
+
+# API
+mlflow
+s3fs
+fastapi
+uvicorn
+
+# utilities
+six>=1.14
+joblib
+memoized-property
+termcolor
+python-multipart
